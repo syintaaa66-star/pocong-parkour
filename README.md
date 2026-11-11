@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Pocong Parkour adalah game lari dan lompat bernuansa horor komedi. Hindari rintangan, kumpulkan kunang-kunang, dan pecahkan rekor.">
+<meta name="author" content="Studio Layar Senja">
+<meta name="theme-color" content="#17221f">
+<meta name="color-scheme" content="dark light">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pocong Parkour">
+<meta name="mobile-web-app-capable" content="yes">
+<meta property="og:type" content="game">
+<meta property="og:title" content="Pocong Parkour">
+<meta property="og:description" content="Lompat, hindari rintangan, dan kumpulkan kunang-kunang di jalan desa berkabut.">
+<meta property="og:locale" content="id_ID">
+<meta property="og:site_name" content="Pocong Parkour">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pocong Parkour">
+<meta name="twitter:description" content="Game parkour pocong dengan suasana desa malam yang jenaka.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2317221f'/%3E%3Cpath d='M22 17q10-9 20 0l-2 29H24z' fill='%23e9e7d9' stroke='%23aeb7a7' stroke-width='2'/%3E%3Cpath d='M25 27h4m7 0h4' stroke='%2317221f' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M24 46l-5 7m21-7 5 7' stroke='%23e9e7d9' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>Pocong Parkour — Lari dari Kabut</title>
+<style>
+:root{
+color-scheme:dark;
+--night:oklch(19% .025 155);
+--deep:oklch(24% .035 155);
+--paper:oklch(91% .025 95);
+--muted:oklch(72% .035 105);
+--lime:oklch(82% .16 112);
+--rust:oklch(67% .13 43);
+--line:oklch(42% .035 145);
+--display:Georgia,serif;
+--body:"Trebuchet MS",Verdana,sans-serif
+}
+*{box-sizing:border-box}
+html,body{
+margin:0;min-height:100%;
+background:var(--night);color:var(--paper);
+font-family:var(--body);overscroll-behavior:none
+}
+body{
+min-height:100vh;min-height:100dvh;
+padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+overflow:hidden;touch-action:manipulation
+}
+.grain{
+position:fixed;inset:0;pointer-events:none;z-index:20;opacity:.045;
+background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E")
+}
+button{
+font:inherit;color:inherit;cursor:pointer;min-height:48px;
+border:1px solid var(--line);background:var(--deep);
+padding:12px 18px;border-radius:4px;
+transition:background .16s,border-color .16s,transform .16s
+}
+button:hover{background:oklch(31% .045 145);border-color:var(--lime)}
+button:active{transform:translateY(2px)}
+button:focus-visible{outline:3px solid var(--lime);outline-offset:3px}
+button:disabled{opacity:.4;cursor:not-allowed}
+.primary{background:var(--lime);color:oklch(20% .04 140);border-color:var(--lime);font-weight:800}
+.primary:hover{background:oklch(88% .13 112)}
+.quiet{background:transparent}
+.shell{
+width:min(1180px,100%);height:100vh;height:100dvh;margin:auto;
+padding:clamp(12px,2vw,24px);display:flex;flex-direction:column;gap:12px
+}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:44px}
+.brand{font-family:var(--display);font-size:clamp(20px,3vw,28px);letter-spacing:-.04em}
+.brand small{font:700 10px var(--body);letter-spacing:.18em;color:var(--lime);display:block}
+.top-actions{display:flex;gap:8px}
+.top-actions button{min-height:44px;padding:8px 12px}
+.game-frame{position:relative;flex:1;min-height:0;border:1px solid var(--line);background:#182521;overflow:hidden;isolation:isolate}
+.game-frame:after{content:"";position:absolute;inset:0;pointer-events:none;border:1px solid #d8dfbd18}
+.game-frame canvas{display:block;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none}
+.hud{position:absolute;z-index:2;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none;gap:8px}
+.stat{background:#14201ddf;border:1px solid #8e9b8055;padding:8px 12px;min-width:88px}
+.stat span{display:block;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.stat strong{font-family:var(--display);font-size:22px}
+.hud-right{display:flex;gap:8px}
+.hud button{pointer-events:auto;min-height:42px;padding:8px 12px}
+.bottomline{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;gap:12px}
+.bottomline b{color:var(--lime);font-weight:600}
+.overlay{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:20px;background:#101a17bd;backdrop-filter:blur(3px)}
+.panel{width:min(460px,100%);max-height:100%;overflow:auto;background:var(--paper);color:oklch(22% .03 150);padding:clamp(20px,4vw,36px);border-left:5px solid var(--rust);box-shadow:12px 12px 0 #101a1780;animation:rise .42s both}
+.panel h1,.panel h2{font-family:var(--display);letter-spacing:-.045em;line-height:1.02;margin:0 0 12px;font-size:clamp(34px,6vw,58px)}
+.panel p{line-height:1.55;margin:8px 0 18px;color:oklch(39% .035 150)}
+.panel .eyebrow{font-size:11px;letter-spacing:.2em;font-weight:900;color:oklch(48% .1 45);margin-bottom:10px}
+.panel-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.panel button{color:var(--paper);background:oklch(25% .04 150);border-color:oklch(25% .04 150)}
+.panel button.primary{background:oklch(76% .14 112);color:oklch(20% .04 140);border-color:oklch(76% .14 112)}
+.instructions{padding-left:19px;line-height:1.65;color:oklch(35% .035 150)}
+.touchbar{display:none;justify-content:center;gap:12px}
+.touchbar button{min-width:120px;touch-action:none;font-weight:800}
+.touchbar .jump{background:var(--lime);color:oklch(20% .04 140);border-color:var(--lime)}
+.rotate{position:fixed;inset:0;z-index:50;background:var(--night);display:none;place-items:center;text-align:center;padding:30px}
+.rotate svg{width:88px;height:88px;animation:tilt 2s ease-in-out infinite}
+.rotate p{max-width:280px;color:var(--muted);line-height:1.5}
+.toast{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:4;background:var(--paper);color:var(--night);padding:9px 14px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+.error{display:none;position:fixed;inset:0;z-index:99;background:var(--night);padding:24px;place-items:center;text-align:center}
+.error.show{display:grid}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tilt{0%,100%{transform:rotate(0)}50%{transform:rotate(90deg)}}
+@media(max-width:480px){
+.shell{padding:10px;gap:8px}
+.topbar{min-height:38px}
+.top-actions button{font-size:12px;padding:7px 9px}
+.brand{font-size:20px}
+.stat{min-width:70px;padding:6px 8px}
+.stat strong{font-size:19px}
+.hud{top:8px;left:8px;right:8px}
+.bottomline{font-size:11px}
+.touchbar{display:flex}
+.panel{padding:22px}
+.panel h1{font-size:42px}
+}
+@media(min-width:481px) and (max-width:768px){.shell{padding:14px}.touchbar{display:flex}}
+@media(min-width:1200px){.shell{padding:24px}.game-frame{max-height:760px}}
+@media(orientation:portrait) and (max-width:900px){.rotate{display:grid}}
+@media(orientation:landscape){.rotate{display:none}.touchbar button{min-width:104px}}
+@media(prefers-reduced-motion:reduce){
+*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<main class="shell">
+<header class="topbar">
+<div class="brand">POCONG PARKOUR <small>OPERASI: JANGAN KEJEBLOS</small></div>
+<nav class="top-actions" aria-label="Menu permainan">
+<button id="helpBtn" type="button" aria-label="Cara bermain">Cara main</button>
+<button id="soundBtn" type="button" aria-label="Matikan suara">Suara: ON</button>
+<button id="fullBtn" type="button" aria-label="Layar penuh">⛶</button>
+</nav>
+</header>
+
+<section class="game-frame" id="gameFrame" aria-label="Area permainan Pocong Parkour">
+<canvas id="game" draggable="false" aria-label="Permainan lari dan lompat pocong"></canvas>
+
+<div class="hud">
+<div class="stat"><span>Jarak</span><strong id="score">0 m</strong></div>
+<div class="hud-right">
+<div class="stat"><span>Kunang-kunang</span><strong id="coins">0</strong></div>
+<div class="stat"><span>Rekor</span><strong id="best">0 m</strong></div>
+<button id="pauseBtn" type="button" aria-label="Jeda permainan">Ⅱ</button>
+</div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="overlay" id="overlay">
+<section class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
+<div class="eyebrow">MISI MALAM INI · DESA KABUT</div>
+<h1 id="panelTitle">Pocong<br>Parkour</h1>
+<p id="panelText">Jalan desa mulai berkabut. Bantu si pocong melompati batu nisan dan akar pohon. Ambil kunang-kunang sebanyak mungkin!</p>
+<div class="panel-actions" id="panelActions">
+<button class="primary" id="startBtn" type="button">Mulai lari →</button>
+<button id="howBtn" type="button">Lihat cara main</button>
+</div>
+</section>
+</div>
+</section>
+
+<div class="touchbar" aria-label="Kontrol sentuh">
+<button id="jumpBtn" class="jump" type="button">LOMPAT ↑</button>
+<button id="duckBtn" type="button">MERUNDUK ↓</button>
+</div>
+
+<footer class="bottomline">
+<span><b>SPACE / ↑</b> lompat · <b>↓</b> merunduk</span>
+<span>ESC / P jeda · M suara · F layar penuh · R ulang</span>
+</footer>
+</main>
+
+<div class="rotate" id="rotateNotice" aria-live="polite">
+<div>
+<svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+<rect x="32" y="12" width="36" height="62" rx="6" stroke="#dce2cf" stroke-width="5"/>
+<path d="M43 65h14M20 45a31 31 0 0 1 50-23M70 22l2-14 13 7" stroke="#b5d86c" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+<h2>Putar perangkatmu</h2>
+<p>Game ini lebih nyaman dimainkan dalam posisi mendatar. Putar layar ke mode lanskap, ya.</p>
+</div>
+</div>
+
+<div class="error" id="fatalError" role="alert">
+<div>
+<h2>Waduh, kabutnya terlalu tebal.</h2>
+<p>Permainan gagal dimuat. Coba muat ulang halaman ini. Jika masih gagal, buka dengan Chrome versi terbaru.</p>
+<button onclick="location.reload()">Muat ulang</button>
+</div>
+</div>
+
+<script>
+(()=>{
+'use strict';
+
+const $=id=>document.getElementById(id);
+const canvas=$('game'),ctx=canvas.getContext('2d',{alpha:false});
+if(!ctx){$('fatalError').classList.add('show');return}
+
+const frame=$('gameFrame'),overlay=$('overlay'),panelTitle=$('panelTitle'),panelText=$('panelText'),panelActions=$('panelActions');
+const scoreEl=$('score'),coinsEl=$('coins'),bestEl=$('best'),pauseBtn=$('pauseBtn'),soundBtn=$('soundBtn');
+const STORE='app_v1_state';
+const defaults={best:0,muted:false,volume:.45,difficulty:1};
+
+let saved;
+try{
+saved=JSON.parse(localStorage.getItem(STORE)||'null');
+if(!saved||saved.version!==1)saved=null;
+}catch(e){saved=null}
+
+let settings={...defaults,...(saved||{})};
+if(!Number.isFinite(settings.best)||settings.best<0)settings.best=0;
+if(typeof settings.muted!=='boolean')settings.muted=false;
+
+let W=800,H=420,dpr=1,raf=0,last=0,elapsed=0,distance=0,coins=0,speed=260,spawnClock=0,coinClock=0,entities=[],particles=[];
+let mode='menu',player={x:110,y:0,w:46,h:70,vy:0,onGround:true,duck:false,duckTime:0},ground=0,toastTimer=0,audio=null,wake=null,hasInteracted=false,lowFPS=0,quality=true,runId=0;
+
+const rand=(a,b)=>a+Math.random()*(b-a);
+
+function persist(){
+try{
+localStorage.setItem(STORE,JSON.stringify({version:1,best:settings.best,muted:settings.muted,volume:settings.volume,difficulty:settings.difficulty}));
+}catch(e){
+showToast('Penyimpanan penuh; rekor hanya tersimpan sementara.');
+}
+}
+
+function showToast(msg){
+const t=$('toast');
+t.textContent=msg;
+t.classList.add('show');
+clearTimeout(toastTimer);
+toastTimer=setTimeout(()=>t.classList.remove('show'),1900);
+}
+
+function resize(){
+const r=frame.getBoundingClientRect();
+if(!r.width||!r.height)return;
+W=r.width;H=r.height;
+dpr=Math.min(2,window.devicePixelRatio||1);
+canvas.width=Math.round(W*dpr);
+canvas.height=Math.round(H*dpr);
+ctx.setTransform(1,0,0,1,0,0);
+ctx.scale(dpr,dpr);
+ground=H*.79;
+player.y=player.onGround?ground-player.h:Math.min(player.y,ground-player.h);
+}
+
+let resizeTimer;
+window.addEventListener('resize',()=>{
+clearTimeout(resizeTimer);
+resizeTimer=setTimeout(resize,180);
+});
+if(window.visualViewport){
+window.visualViewport.addEventListener('resize',()=>{
+clearTimeout(resizeTimer);
+resizeTimer=setTimeout(resize,180);
+});
+}
+
+function sound(type){
+if(settings.muted)return;
+try{
+if(!audio)audio=new(window.AudioContext||window.webkitAudioContext)();
+if(audio.state==='suspended')audio.resume();
+const o=audio.createOscillator(),g=audio.createGain();
+o.connect(g);g.connect(audio.destination);
+let f=type==='jump'?420:type==='coin'?820:type==='hit'?120:260;
+o.frequency.setValueAtTime(f,audio.currentTime);
+o.frequency.exponentialRampToValueAtTime(Math.max(55,f*.62),audio.currentTime+.12);
+g.gain.setValueAtTime(settings.volume*.16,audio.currentTime);
+g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.14);
+o.start();o.stop(audio.currentTime+.15);
+}catch(e){}
+}
+
+async function keepAwake(){
+try{
+if('wakeLock'in navigator)wake=await navigator.wakeLock.request('screen');
+}catch(e){}
+}
+
+function releaseWake(){
+try{
+if(wake){wake.release();wake=null;}
+}catch(e){}
+}
+
+function setMode(next){
+mode=next;
+pauseBtn.textContent=next==='playing'?'Ⅱ':'▶';
+if(next==='playing'){
+overlay.style.display='none';
+last=performance.now();
+if(!raf)raf=requestAnimationFrame(loop);
+keepAwake();
+}else{
+overlay.style.display='grid';
+releaseWake();
+}
+}
+
+function menu(title,body,buttons){
+panelTitle.innerHTML=title;
+panelText.textContent=body;
+panelActions.replaceChildren();
+buttons.forEach(b=>{
+const el=document.createElement('button');
+el.textContent=b.label;
+el.className=b.primary?'primary':'';
+el.addEventListener('click',b.action);
+panelActions.append(el);
+});
+overlay.style.display='grid';
+}
+
+function start(){
+runId++;
+distance=0;coins=0;speed=260;
+spawnClock=.9;coinClock=1.1;elapsed=0;
+entities=[];particles=[];
+player={x:Math.max(72,W*.14),y:ground-70,w:46,h:70,vy:0,onGround:true,duck:false,duckTime:0};
+updateHud();
+setMode('playing');
+sound('start');
+}
+
+function jump(){
+if(mode!=='playing')return;
+if(player.onGround){
+player.vy=-610;
+player.onGround=false;
+player.duck=false;
+sound('jump');
+burst(player.x+22,player.y+55,5);
+}
+}
+
+function duck(on){
+if(mode!=='playing')return;
+player.duck=on&&player.onGround;
+player.h=player.duck?42:70;
+player.y=ground-player.h;
+}
+
+function spawnObstacle(){
+const type=Math.random()<.58?'tomb':'root';
+const w=type==='tomb'?rand(30,43):rand(46,64);
+const h=type==='tomb'?rand(43,58):rand(22,30);
+const gap=rand(330,470);
+if(entities.some(e=>e.kind==='obstacle'&&W-e.x<gap))return;
+entities.push({kind:'obstacle',type,x:W+24,y:ground-h,w,h,passed:false});
+}
+
+function spawnCoin(){
+const y=ground-rand(100,160);
+entities.push({kind:'coin',x:W+20,y,r:9,phase:rand(0,6)});
+}
+
+function burst(x,y,n){
+for(let i=0;i<n;i++){
+particles.push({x,y,vx:rand(-100,100),vy:rand(-150,20),life:rand(.25,.6),max:.6});
+}
+}
+
+function update(dt){
+elapsed+=dt;
+distance+=speed*dt*.035;
+speed=Math.min(470,260+elapsed*3.3);
+spawnClock-=dt;coinClock-=dt;
+
+if(spawnClock<=0){
+spawnObstacle();
+spawnClock=rand(1.05,1.65)*Math.max(.72,300/speed);
+}
+if(coinClock<=0){
+spawnCoin();
+coinClock=rand(1.7,2.5);
+}
+
+if(!player.onGround){
+player.vy+=1450*dt;
+player.y+=player.vy*dt;
+if(player.y+player.h>=ground){
+player.y=ground-player.h;
+player.vy=0;
+player.onGround=true;
+}
+}
+
+if(player.duck){
+player.duckTime+=dt;
+if(player.duckTime>1.1)duck(false);
+}else player.duckTime=0;
+
+for(let i=entities.length-1;i>=0;i--){
+const e=entities[i];
+e.x-=speed*dt;
+
+if(e.kind==='coin'){
+e.phase+=dt*5;
+const px=player.x+player.w*.5,py=player.y+player.h*.48;
+if(Math.hypot(px-e.x,py-e.y)<30){
+coins++;
+burst(e.x,e.y,7);
+sound('coin');
+entities.splice(i,1);
+updateHud();
+continue;
+}
+}else{
+const p={x:player.x+8,y:player.y+8,w:player.w-16,h:player.h-12};
+const q={x:e.x+5,y:e.y+5,w:e.w-10,h:e.h-7};
+if(p.x<q.x+q.w&&p.x+p.w>q.x&&p.y<q.y+q.h&&p.y+p.h>q.y){
+gameOver();
+return;
+}
+}
+if(e.x<-80)entities.splice(i,1);
+}
+
+for(let i=particles.length-1;i>=0;i--){
+const p=particles[i];
+p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=300*dt;
+if(p.life<=0)particles.splice(i,1);
+}
+updateHud();
+}
+
+function updateHud(){
+scoreEl.textContent=Math.floor(distance)+' m';
+coinsEl.textContent=coins;
+bestEl.textContent=Math.floor(settings.best)+' m';
+}
+
+function gameOver(){
+if(mode!=='playing')return;
+settings.best=Math.max(settings.best,Math.floor(distance));
+persist();updateHud();sound('hit');
+burst(player.x+20,player.y+30,18);
+setMode('over');
+menu('Yah, tersandung!','Jarakmu '+Math.floor(distance)+' meter dan berhasil mengumpulkan '+coins+' kunang-kunang. '+(Math.floor(distance)>=settings.best?'Rekor baru!':'Coba lewati rekor '+Math.floor(settings.best)+' meter.'),[
+{label:'Main lagi',primary:true,action:start},
+{label:'Cara main',action:showHelp},
+{label:'Menu awal',action:showHome}
+]);
+}
+
+function draw(){
+ctx.fillStyle='#182521';
+ctx.fillRect(0,0,W,H);
+
+const sky=ctx.createLinearGradient(0,0,0,H);
+sky.addColorStop(0,'#1a2926');
+sky.addColorStop(.7,'#34443a');
+sky.addColorStop(1,'#65705a');
+ctx.fillStyle=sky;
+ctx.fillRect(0,0,W,H);
+
+ctx.fillStyle='#c6d0a4';
+ctx.globalAlpha=.12;
+ctx.beginPath();
+ctx.arc(W*.78,H*.22,Math.min(W,H)*.09,0,Math.PI*2);
+ctx.fill();
+ctx.globalAlpha=1;
+
+for(let layer=0;layer<3;layer++){
+ctx.fillStyle=['#26372f','#304137','#405044'][layer];
+ctx.beginPath();
+ctx.moveTo(0,ground-layer*24);
+for(let x=0;x<=W+40;x+=40){
+const y=ground-70-layer*36+Math.sin((x+elapsed*speed*(.08+layer*.06))*.009)*18;
+ctx.lineTo(x,y);
+}
+ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();
+}
+
+ctx.fillStyle='#202a24';
+ctx.fillRect(0,ground,W,H-ground);
+ctx.fillStyle='#718064';
+ctx.fillRect(0,ground,W,4);
+
+ctx.strokeStyle='#a0a77c';
+ctx.lineWidth=2;
+ctx.setLineDash([22,25]);
+ctx.lineDashOffset=-elapsed*speed*.7;
+ctx.beginPath();
+ctx.moveTo(0,ground+42);
+ctx.lineTo(W,ground+42);
+ctx.stroke();
+ctx.setLineDash([]);
+
+for(let x=0;x<W;x+=85){
+const xx=(x-(elapsed*speed*.25)%85+85)%W;
+ctx.fillStyle='#26382e';
+ctx.fillRect(xx,ground-30,5,30);
+ctx.beginPath();
+ctx.arc(xx+2,ground-34,15,Math.PI,Math.PI*2);
+ctx.fill();
+}
+
+entities.forEach(e=>{
+if(e.kind==='coin'){
+ctx.save();
+ctx.translate(e.x,e.y+Math.sin(e.phase)*4);
+ctx.fillStyle='#d8e99a';
+ctx.beginPath();ctx.arc(0,0,e.r,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#fff4b2';
+ctx.beginPath();ctx.arc(-3,-3,3,0,Math.PI*2);ctx.fill();
+ctx.restore();
+}else if(e.type==='tomb'){
+ctx.fillStyle='#899184';
+ctx.beginPath();ctx.roundRect(e.x,e.y,e.w,e.h,8);ctx.fill();
+ctx.fillStyle='#526056';
+ctx.fillRect(e.x+e.w*.25,e.y+12,e.w*.5,4);
+ctx.fillStyle='#b9c0a7';
+ctx.font='10px Georgia';
+ctx.fillText('+',e.x+e.w*.39,e.y+30);
+}else{
+ctx.fillStyle='#8b7557';
+ctx.beginPath();ctx.roundRect(e.x,e.y,e.w,e.h,10);ctx.fill();
+ctx.strokeStyle='#b49a70';
+ctx.lineWidth=3;
+ctx.beginPath();
+ctx.moveTo(e.x+8,e.y+5);
+ctx.lineTo(e.x+e.w-9,e.y+e.h-5);
+ctx.stroke();
+}
+});
+
+drawPocong();
+
+particles.forEach(p=>{
+ctx.globalAlpha=Math.max(0,p.life/p.max);
+ctx.fillStyle='#d8e99a';
+ctx.fillRect(p.x,p.y,3,3);
+});
+ctx.globalAlpha=1;
+}
+
+function drawPocong(){
+const x=player.x,y=player.y,w=player.w,h=player.h;
+ctx.save();
+ctx.translate(x,y);
+ctx.fillStyle='#0c1
